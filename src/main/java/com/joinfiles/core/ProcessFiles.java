@@ -51,7 +51,8 @@ public class ProcessFiles {
                     e.printStackTrace();
                 }
             });
-            System.out.println("\nTotal de linhas no arquivo: " + totalFileLines);
+            System.out.println("\nArquivo foi gerado com sucesso em: " + properties.getString("directory.joined.url") );
+            System.out.println("Total de linhas no arquivo: " + totalFileLines);
         } catch (IOException e) {
             e.printStackTrace();
         }
