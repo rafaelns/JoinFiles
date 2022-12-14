@@ -11,7 +11,7 @@ repositories {
 }
 
 application {
-    mainClass.set("br.com.rns.joinfiles.JoinFilesApplication")
+    mainClass.set("com.joinfiles.JoinFilesApplication")
 }
 
 dependencies {

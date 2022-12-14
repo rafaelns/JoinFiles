@@ -1,6 +1,6 @@
-package br.com.rns.joinfiles;
+package com.joinfiles;
 
-import br.com.rns.joinfiles.core.ProcessFiles;
+import com.joinfiles.core.ProcessFiles;
 
 public class JoinFilesApplication {
 
