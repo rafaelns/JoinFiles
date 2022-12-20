@@ -8,6 +8,7 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 
 public class ProcessFiles {
 
@@ -31,37 +32,55 @@ public class ProcessFiles {
 
     private void generateFileFromDirectoriesPaths() {
 
-        try(BufferedWriter writer = getWriter()) {
+        try (BufferedWriter writer = getWriter()) {
             System.out.println("\nArquivos mesclados:");
+            int fileLineCount = 0;
 
-            listFilesOnDirectory().forEach(path -> {
-                System.out.println(path);
-
-                try(BufferedReader reader = getFileReaderForPath(path)) {
-                    int headerLineNumber = 0;
+            for (Path path : getFilesPath()) {
+                try (BufferedReader reader = getFileReaderForPath(path)) {
                     String currentLine;
+
                     while ((currentLine = reader.readLine()) != null) {
-                        headerLineNumber++;
-                        if (!isFirstFile && headerLineNumber == 1) { continue; }
-                        totalFileLines++;
+                        fileLineCount++;
+                        if (isFirstFile && fileLineCount == 1) {
+                            writer.write(properties.getString("file.header") + "\n");
+                            currentLine = reader.readLine();
+                            fileLineCount++;
+                        }
+                        if (!isFirstFile && fileLineCount == 1) {
+                            //writer.write("");
+                            currentLine = reader.readLine();
+                        }
+
                         writer.write(currentLine + "\n");
-                        isFirstFile = false;
                     }
+
+                    isFirstFile = false;
+                    totalFileLines += fileLineCount;
+                    System.out.println(String.format("Copiadas %d linhas do arquivo: %s ", fileLineCount, path));
+                    fileLineCount = 0;
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-            });
-            System.out.println("\nArquivo foi gerado com sucesso em: " + properties.getString("directory.joined.url") );
+            }
+
+            System.out.println("\nArquivo foi gerado com sucesso em: " + properties.getString("directory.joined.url"));
             System.out.println("Total de linhas no arquivo: " + totalFileLines);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    private DirectoryStream<Path> listFilesOnDirectory() throws IOException {
+    private boolean isFirstFile(List<Path> filesPath, Path path) {
+        return filesPath.indexOf(path) == 0;
+    }
+
+    private DirectoryStream<Path> getFilesPath() throws IOException {
         Path csvs = Paths.get(properties.getString("directory.read.url"));
         DirectoryStream.Filter<Path> filter = entry -> !Files.isDirectory(entry);
-        return Files.newDirectoryStream(csvs, filter);
+        DirectoryStream<Path> filesPath = Files.newDirectoryStream(csvs, filter);
+
+        return filesPath;
     }
 
     private BufferedWriter getWriter() throws IOException {
