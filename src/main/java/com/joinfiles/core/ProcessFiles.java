@@ -24,6 +24,7 @@ public class ProcessFiles {
         }
     }
 
+
     public void process() {
         init();
         generateFileFromDirectoriesPaths();
