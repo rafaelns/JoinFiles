@@ -1,36 +1,33 @@
 package com.joinfiles.core;
 
 import com.joinfiles.config.JoinFilesProperties;
-import org.apache.commons.configuration2.Configuration;
+import org.apache.commons.configuration2.ex.ConfigurationException;
 
 import java.io.*;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.List;
 
 public class ProcessFiles {
 
-    private Configuration properties;
+    private  JoinFilesProperties joinFilesProperties;
     private static boolean isFirstFile = true;
     private static int totalFileLines = 0;
 
+    public ProcessFiles (){
+        init();
+    }
+
     private void init() {
         try {
-            JoinFilesProperties joinFilesProperties = new JoinFilesProperties();
-            properties = joinFilesProperties.getAppProps();
+            joinFilesProperties = new JoinFilesProperties();
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    public void process() {
-        init();
-        generateFileFromDirectoriesPaths();
-    }
-
-    private void generateFileFromDirectoriesPaths() {
+    public void generateFile() {
 
         try (BufferedWriter writer = getWriter()) {
             System.out.println("\nArquivos mesclados:");
@@ -43,12 +40,11 @@ public class ProcessFiles {
                     while ((currentLine = reader.readLine()) != null) {
                         fileLineCount++;
                         if (isFirstFile && fileLineCount == 1) {
-                            writer.write(properties.getString("file.header") + "\n");
+                            writer.write(joinFilesProperties.getPropertyByName("file.header") + "\n");
                             currentLine = reader.readLine();
                             fileLineCount++;
                         }
                         if (!isFirstFile && fileLineCount == 1) {
-                            //writer.write("");
                             currentLine = reader.readLine();
                         }
 
@@ -64,33 +60,35 @@ public class ProcessFiles {
                 }
             }
 
-            System.out.println("\nArquivo foi gerado com sucesso em: " + properties.getString("directory.joined.url"));
+            System.out.println("\nArquivo foi gerado com sucesso em: " + joinFilesProperties.getPropertyByName("directory.joined.url"));
             System.out.println("Total de linhas no arquivo: " + totalFileLines);
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    private boolean isFirstFile(List<Path> filesPath, Path path) {
-        return filesPath.indexOf(path) == 0;
-    }
-
-    private DirectoryStream<Path> getFilesPath() throws IOException {
-        Path csvs = Paths.get(properties.getString("directory.read.url"));
+    public DirectoryStream<Path> getFilesPath() throws IOException, ConfigurationException {
+        Path csvs = Paths.get(joinFilesProperties.getPropertyByName("directory.read.url"));
         DirectoryStream.Filter<Path> filter = entry -> !Files.isDirectory(entry);
         DirectoryStream<Path> filesPath = Files.newDirectoryStream(csvs, filter);
 
         return filesPath;
     }
 
-    private BufferedWriter getWriter() throws IOException {
-        Path result = Paths.get(properties.getString("directory.joined.url"));
+    public BufferedWriter getWriter() throws ConfigurationException, IOException {
+        Path result = Paths.get(joinFilesProperties.getPropertyByName("directory.joined.url"));
         FileWriter fileToWrite = new FileWriter(result.toFile());
         return new BufferedWriter(fileToWrite);
+
     }
 
-    private BufferedReader getFileReaderForPath(Path path) throws FileNotFoundException {
+    public BufferedReader getFileReaderForPath(Path path) throws FileNotFoundException {
         FileReader fileToRead = new FileReader(path.toFile());
         return new BufferedReader(fileToRead);
+    }
+
+
+    public JoinFilesProperties getJoinFilesProperties() {
+        return this.joinFilesProperties;
     }
 }
