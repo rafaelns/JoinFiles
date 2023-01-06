@@ -38,7 +38,6 @@ public class ProcessFilesTest {
         processFiles.generateFile();
 
         List<Path> paths = getFilesPath(processFiles.getFilesPath());
-
         BufferedReader reader = processFiles.getFileReaderForPath(
                 Paths.get(this.joinFilesProperties.getPropertyByName("directory.joined.url"))
         );
